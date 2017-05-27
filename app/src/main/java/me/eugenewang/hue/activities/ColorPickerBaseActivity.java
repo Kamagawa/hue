@@ -30,53 +30,15 @@ import me.eugenewang.hue.utils.Cameras;
 import me.eugenewang.hue.views.CameraColorPickerPreview;
 
 
-/**
- * An {@link android.support.v7.app.AppCompatActivity} for picking colors by using the camera of the device.
- * <p/>
- * The user aims at a color with the camera of the device, when they click on the preview the color is selected.
- * An animation notifies the user of the selection.
- * <p/>
- * The last selected color can be saved by clicking the save button.
- * An animation notifies the user of the save.
- */
 public class ColorPickerBaseActivity extends AppCompatActivity
         implements CameraColorPickerPreview.OnColorSelectedListener, View.OnClickListener {
 
-    /**
-     * A tag used in the logs.
-     */
+
     protected static final String TAG = ColorPickerBaseActivity.class.getSimpleName();
-
-    /**
-     * The name of the property that animates the 'picked color'.
-     * <p/>
-     * Used by {@link ColorPickerBaseActivity#mPickedColorProgressAnimator}.
-     */
     protected static final String PICKED_COLOR_PROGRESS_PROPERTY_NAME = "pickedColorProgress";
-
-    /**
-     * The name of the property that animates the 'save completed'.
-     * <p/>
-     * Used by {@link ColorPickerBaseActivity#mSaveCompletedProgressAnimator}.
-     */
     protected static final String SAVE_COMPLETED_PROGRESS_PROPERTY_NAME = "saveCompletedProgress";
-
-    /**
-     * The duration of the animation of the confirm save message. (in millis).
-     */
     protected static final long DURATION_CONFIRM_SAVE_MESSAGE = 400;
-
-    /**
-     * The delay before the confirm save message is hidden. (in millis).
-     * <p/>
-     * 1000 + DURATION_CONFIRM_SAVE_MESSAGE = 1400
-     * The confirm save message should stay on screen for 1 second.
-     */
     protected static final long DELAY_HIDE_CONFIRM_SAVE_MESSAGE = 1400;
-
-    /**
-     * A safe way to get an instance of the back {@link android.hardware.Camera}.
-     */
     private static Camera getCameraInstance() {
         Camera c = null;
         try {
@@ -87,127 +49,28 @@ public class ColorPickerBaseActivity extends AppCompatActivity
         return c;
     }
 
-    /**
-     * An instance of the {@link android.hardware.Camera} used for displaying the preview.
-     */
+
     protected Camera mCamera;
-
-    /**
-     * A boolean for knowing the orientation of the activity.
-     */
     protected boolean mIsPortrait;
-
-    /**
-     * A simple {@link android.widget.FrameLayout} that contains the preview.
-     */
     protected FrameLayout mPreviewContainer;
-
-    /**
-     * The {@link me.eugenewang.views.CameraColorPickerPreview} used for the preview.
-     */
     protected CameraColorPickerPreview mCameraPreview;
-
-    /**
-     * A reference to the {@link ColorPickerBaseActivity.CameraAsyncTask} that gets the {@link android.hardware.Camera}.
-     */
     protected CameraAsyncTask mCameraAsyncTask;
-
-    /**
-     * The color selected by the user.
-     * <p/>
-     * The user "selects" a color by pointing a color with the camera.
-     */
     protected int mSelectedColor;
-
-    /**
-     * The last picked color.
-     * <p/>
-     * The user "picks" a color by clicking the preview.
-     */
     protected int mLastPickedColor;
-
-    /**
-     * A simple {@link android.view.View} used for showing the picked color.
-     */
     protected View mPickedColorPreview;
-
-    /**
-     * A simple {@link android.view.View} used for animating the color being picked.
-     */
     protected View mPickedColorPreviewAnimated;
-
-    /**
-     * An {@link android.animation.ObjectAnimator} used for animating the color being picked.
-     */
     protected ObjectAnimator mPickedColorProgressAnimator;
-
-    /**
-     * The delta for the translation on the x-axis of the mPickedColorPreviewAnimated.
-     */
     protected float mTranslationDeltaX;
-
-    /**
-     * The delta for the translation on the y-axis of the mPickedColorPreviewAnimated.
-     */
     protected float mTranslationDeltaY;
-
-    /**
-     * A simple {@link android.widget.TextView} used for showing a human readable representation of the picked color.
-     */
     protected TextView mColorPreviewText;
-
-    /**
-     * A simple {@link android.view.View} used for showing the selected color.
-     */
     protected View mPointerRing;
-
-    /**
-     * An icon representing the "save completed" state.
-     */
-    protected View mSaveCompletedIcon;
-
-    /**
-     * The save button.
-     */
-    protected View mSaveButton;
-
-    /**
-     * A float representing the progress of the "save completed" state.
-     */
     protected float mSaveCompletedProgress;
-
-    /**
-     * An {@link android.animation.ObjectAnimator} used for animating the "save completed" state.
-     */
     protected ObjectAnimator mSaveCompletedProgressAnimator;
-
-    /**
-     * A simple {@link android.widget.TextView} that confirms the user that the color has been saved successfully.
-     */
     protected TextView mConfirmSaveMessage;
-
-    /**
-     * An {@link android.view.animation.Interpolator} used for showing the mConfirmSaveMessage.
-     */
     protected Interpolator mConfirmSaveMessageInterpolator;
-
-    /**
-     * A {@link java.lang.Runnable} that hide the confirm save message.
-     * <p/>
-     * This runnable is posted with some delayed on mConfirmSaveMessage each time a color is successfully saved.
-     */
     protected Runnable mHideConfirmSaveMessage;
-
-    /**
-     * A simple boolean for keeping track of the device's camera flash state.
-     */
     protected boolean mIsFlashOn;
-
-    /** the intent {@link android.content.Intent#getAction action} that led to this activity. */
     protected String action = null;
-
-    /** <a href="http://www.openintents.org/action/org-openintents-action-pick-color/">
-     * see openintents.org</a> */
     public static final String OI_COLOR_PICKER = "org.openintents.action.PICK_COLOR";
     public static final String OI_COLOR_DATA = "org.openintents.extra.COLOR";
 
@@ -316,7 +179,6 @@ public class ColorPickerBaseActivity extends AppCompatActivity
                 return;
             }
             ColorItems.saveColorItem(this, new ColorItem(mLastPickedColor));
-            setSaveCompleted(true);
         }
     }
 
@@ -333,9 +195,7 @@ public class ColorPickerBaseActivity extends AppCompatActivity
         mPickedColorPreviewAnimated = findViewById(R.id.activity_color_picker_animated_preview);
         mColorPreviewText = (TextView) findViewById(R.id.activity_color_picker_color_preview_text);
         mPointerRing = findViewById(R.id.activity_color_picker_pointer_ring);
-        mSaveCompletedIcon = findViewById(R.id.activity_color_picker_save_completed);
-        mSaveButton = findViewById(R.id.activity_color_picker_save_button);
-        mSaveButton.setOnClickListener(this);
+
         mConfirmSaveMessage = (TextView) findViewById(R.id.activity_color_picker_confirm_save_message);
         mHideConfirmSaveMessage = new Runnable() {
             @Override
@@ -485,9 +345,8 @@ public class ColorPickerBaseActivity extends AppCompatActivity
      * @param previewColor the preview color to apply.
      */
     protected void applyPreviewColor(int previewColor) {
-        setSaveCompleted(false);
         mPickedColorPreview.getBackground().setColorFilter(previewColor, PorterDuff.Mode.SRC_ATOP);
-        mColorPreviewText.setText(ColorItem.makeHexString(previewColor));
+        mColorPreviewText.setText(ColorItem.makeHexString(previewColor) + " : " + ColorItem.getColor(previewColor));
     }
 
     /**
@@ -510,12 +369,7 @@ public class ColorPickerBaseActivity extends AppCompatActivity
      *
      * @param isSaveCompleted the "save completed" state.
      */
-    protected void setSaveCompleted(boolean isSaveCompleted) {
-        mSaveButton.setEnabled(!isSaveCompleted);
-        mSaveCompletedProgressAnimator.cancel();
-        mSaveCompletedProgressAnimator.setFloatValues(mSaveCompletedProgress, isSaveCompleted ? 0f : 1f);
-        mSaveCompletedProgressAnimator.start();
-    }
+
 
     /**
      * Set the progress of the picked color animation.
@@ -542,12 +396,7 @@ public class ColorPickerBaseActivity extends AppCompatActivity
      *
      * @param progress A value in closed range [0,1] representing the progress of the animation of the "save completed" state.
      */
-    protected void setSaveCompletedProgress(float progress) {
-        mSaveButton.setScaleX(progress);
-        mSaveButton.setRotation(45 * (1 - progress));
-        mSaveCompletedIcon.setScaleX(1 - progress);
-        mSaveCompletedProgress = progress;
-    }
+
 
     /**
      * Async task used to configure and start the camera preview.
