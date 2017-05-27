@@ -1,19 +1,32 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+apply plugin: 'com.android.application'
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.3'
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.1"
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+    defaultConfig {
+        applicationId "fr.tvbarthel.apps.cameracolorpicker"
+        minSdkVersion 14
+        targetSdkVersion 25
     }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    flavorDimensions "store", "user"
+
+
 }
 
-allprojects {
-    repositories {
-        jcenter()
-    }
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.android.support:recyclerview-v7:25.1.0'
+    compile 'com.melnykov:floatingactionbutton:1.1.0'
+    compile 'com.google.code.gson:gson:2.4'
+    compile 'com.jpardogo.materialtabstrip:library:1.0.9'
 }
