@@ -1,5 +1,6 @@
 package me.eugenewang.hue.activities;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
@@ -11,6 +12,8 @@ import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
@@ -23,6 +26,7 @@ import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import me.eugenewang.hue.R;
 import me.eugenewang.hue.data.ColorItem;
@@ -75,10 +79,29 @@ public class ColorPickerBaseActivity extends AppCompatActivity
     public static final String OI_COLOR_PICKER = "org.openintents.action.PICK_COLOR";
     public static final String OI_COLOR_DATA = "org.openintents.extra.COLOR";
 
+    private boolean gotPermission = false;
+
+
+    private boolean getThatDamnPermission (){
+        if (PackageManager.PERMISSION_GRANTED!=checkSelfPermission(Manifest.permission.CAMERA)){
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    1);
+            return getThatDamnPermission();
+        }
+        return true;
+    }
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_color_picker);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getThatDamnPermission ();
+        }
 
         initPickedColorProgressAnimator();
         initSaveCompletedProgressAnimator();
