@@ -47,42 +47,49 @@
         android:layout_gravity="bottom"
         app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
         >
-
-        <TextView
-            android:id="@+id/activity_color_picker_color_preview_text"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/activity_color_picker_bottom_bar_height"
-
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_toRightOf="@+id/activity_color_picker_color_preview"
-            android:layout_toLeftOf="@+id/activity_color_picker_save_button"
-            android:layout_x="10dp"
-            android:layout_y="-16dp"
-            android:gravity="center_vertical"
-            android:layout_gravity="top"
+        <LinearLayout
+            android:id="@+id/loline"
             android:layout_alignParentTop="true"
-            android:padding="16dp"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/abc_primary_text_material_light"
-            android:visibility="visible"
-            tools:text="#FF4455" />
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <View
+                android:id="@+id/activity_color_picker_color_preview"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentTop="true"
+                android:layout_margin="10dp"
+                android:background="@drawable/oval_white" />
+            <TextView
+                android:id="@+id/activity_color_picker_color_preview_text"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
 
-        <View
-            android:id="@+id/activity_color_picker_color_preview"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:layout_alignParentTop="true"
-            android:layout_margin="16dp"
-            android:visibility="visible"
-            android:background="@drawable/oval_white" />
+
+
+                android:gravity="center_vertical"
+                android:layout_gravity="top"
+                android:layout_alignParentTop="true"
+                android:padding="16dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/abc_primary_text_material_light"
+                android:visibility="visible"
+                tools:text="#FF4455" />
+
+
+
+        </LinearLayout>
+
 
         <WebView
-            android:layout_alignTop="@id/activity_color_picker_color_preview_text"
+            android:layout_alignTop = "@id/loline"
+            android:layout_marginTop="55dp"
             android:id="@+id/webVisa"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone">
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            >
 
         </WebView>
 

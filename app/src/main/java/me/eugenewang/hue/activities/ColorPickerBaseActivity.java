@@ -30,6 +30,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -62,6 +63,7 @@ public class ColorPickerBaseActivity extends AppCompatActivity
     protected WebView webVisa;
     protected BottomSheetBehavior mBottomSheetBehavior;
     protected RelativeLayout mRelativeLayout;
+    protected LinearLayout mLinerLayout;
     protected Camera mCamera;
     protected boolean mIsPortrait;
     protected FrameLayout mPreviewContainer;
@@ -98,6 +100,16 @@ public class ColorPickerBaseActivity extends AppCompatActivity
         return true;
     }
 
+    private void goUp (boolean up){
+        if(!up) {
+            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            //webVisa.setVisibility(View.GONE);
+        }
+        else  {
+            mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+           // webVisa.setVisibility(View.VISIBLE);
+        }
+    }
 
 
     @Override
@@ -122,8 +134,6 @@ public class ColorPickerBaseActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-
-        // Setup the camera asynchronously.
         mCameraAsyncTask = new CameraAsyncTask();
         mCameraAsyncTask.execute();
     }
@@ -131,29 +141,21 @@ public class ColorPickerBaseActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
-
-        // Cancel the Camera AsyncTask.
         mCameraAsyncTask.cancel(true);
-
-        // Release the camera.
         if (mCamera != null) {
             mCamera.stopPreview();
             mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
         }
-
-        // Remove the camera preview
         if (mCameraPreview != null) {
             mPreviewContainer.removeView(mCameraPreview);
         }
     }
 
     @Override
-    protected void onDestroy() {
-        // Remove any pending mHideConfirmSaveMessage.
+    protected void onDestroy() {// Remove any pending mHideConfirmSaveMessage.
         mConfirmSaveMessage.removeCallbacks(mHideConfirmSaveMessage);
-
         super.onDestroy();
     }
 
@@ -168,9 +170,6 @@ public class ColorPickerBaseActivity extends AppCompatActivity
         }
         return true;
     }
-
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -186,11 +185,9 @@ public class ColorPickerBaseActivity extends AppCompatActivity
                 toggleFlash();
                 handled = true;
                 break;
-
             default:
                 handled = super.onOptionsItemSelected(item);
         }
-
         return handled;
     }
 
@@ -204,6 +201,7 @@ public class ColorPickerBaseActivity extends AppCompatActivity
     public void onClick(View v) {
         if (v == mCameraPreview) {
             animatePickedColor(mSelectedColor);
+            webVisa.loadUrl("http://www.colorhexa.com/"+(""+mSelectedColor).substring(1,7));
         } else if (v.getId() == R.id.activity_color_picker_save_button) {
             if (OI_COLOR_PICKER.equals(action)) {
                 Intent returnIntent = new Intent();
@@ -213,21 +211,17 @@ public class ColorPickerBaseActivity extends AppCompatActivity
                 return;
             }
             ColorItems.saveColorItem(this, new ColorItem(mLastPickedColor));
-        } else if (v == mRelativeLayout) {
+        } else if (v.getId() == R.id.loline) {
             if(mBottomSheetBehavior.getState() == mBottomSheetBehavior.STATE_EXPANDED) {
-                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                webVisa.setVisibility(View.GONE);
-                mColorPreviewText.setVisibility(View.VISIBLE);
-                mPickedColorPreview.setVisibility(View.VISIBLE);
+                goUp(false);
             }
             else if(mBottomSheetBehavior.getState() == mBottomSheetBehavior.STATE_COLLAPSED) {
-                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                webVisa.setVisibility(View.VISIBLE);
-                mColorPreviewText.setVisibility(View.GONE);
-                mPickedColorPreview.setVisibility(View.GONE);
+                goUp(true);
             } else {
-                
+
             }
+        } else if (v == webVisa){
+            //if (mBottomSheetBehavior)
         }
     }
 
@@ -245,7 +239,7 @@ public class ColorPickerBaseActivity extends AppCompatActivity
         mColorPreviewText = (TextView) findViewById(R.id.activity_color_picker_color_preview_text);
         mPointerRing = findViewById(R.id.activity_color_picker_pointer_ring);
         mRelativeLayout =  (RelativeLayout) findViewById(R.id.activity_color_picker_bottom_bar);
-
+        mLinerLayout = (LinearLayout)findViewById(R.id.loline);
 
 
         mConfirmSaveMessage = (TextView) findViewById(R.id.activity_color_picker_confirm_save_message);
@@ -271,6 +265,7 @@ public class ColorPickerBaseActivity extends AppCompatActivity
         mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         mBottomSheetBehavior.setHideable(false);
         webVisa = (WebView)findViewById(R.id.webVisa);
+        webVisa.setClickable(false);
 
         mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -281,19 +276,14 @@ public class ColorPickerBaseActivity extends AppCompatActivity
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
                 if(mBottomSheetBehavior.getState() == mBottomSheetBehavior.STATE_EXPANDED) {
-                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                    webVisa.setVisibility(View.GONE);
-                    mColorPreviewText.setVisibility(View.VISIBLE);
-                    mPickedColorPreview.setVisibility(View.VISIBLE);
+                    //goUp(false);
                 }
                 else if(mBottomSheetBehavior.getState() == mBottomSheetBehavior.STATE_COLLAPSED) {
-                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                    webVisa.setVisibility(View.VISIBLE);
-                    mColorPreviewText.setVisibility(View.GONE);
-                    mPickedColorPreview.setVisibility(View.GONE);
+                    //goUp(true);
                 } else {
 
                 }
+
             }
         });
     }
