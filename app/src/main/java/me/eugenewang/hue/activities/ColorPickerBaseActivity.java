@@ -6,15 +6,20 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -23,16 +28,17 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
+import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import me.eugenewang.hue.R;
 import me.eugenewang.hue.data.ColorItem;
 import me.eugenewang.hue.data.ColorItems;
 import me.eugenewang.hue.utils.Cameras;
 import me.eugenewang.hue.views.CameraColorPickerPreview;
+
 
 
 public class ColorPickerBaseActivity extends AppCompatActivity
@@ -43,7 +49,6 @@ public class ColorPickerBaseActivity extends AppCompatActivity
     protected static final String PICKED_COLOR_PROGRESS_PROPERTY_NAME = "pickedColorProgress";
     protected static final String SAVE_COMPLETED_PROGRESS_PROPERTY_NAME = "saveCompletedProgress";
     protected static final long DURATION_CONFIRM_SAVE_MESSAGE = 400;
-    protected static final long DELAY_HIDE_CONFIRM_SAVE_MESSAGE = 1400;
     private static Camera getCameraInstance() {
         Camera c = null;
         try {
@@ -54,6 +59,8 @@ public class ColorPickerBaseActivity extends AppCompatActivity
         return c;
     }
 
+    protected WebView webVisa;
+    protected BottomSheetBehavior mBottomSheetBehavior;
     protected RelativeLayout mRelativeLayout;
     protected Camera mCamera;
     protected boolean mIsPortrait;
@@ -69,7 +76,6 @@ public class ColorPickerBaseActivity extends AppCompatActivity
     protected float mTranslationDeltaY;
     protected TextView mColorPreviewText;
     protected View mPointerRing;
-    protected float mSaveCompletedProgress;
     protected ObjectAnimator mSaveCompletedProgressAnimator;
     protected TextView mConfirmSaveMessage;
     protected Interpolator mConfirmSaveMessageInterpolator;
@@ -79,9 +85,9 @@ public class ColorPickerBaseActivity extends AppCompatActivity
     public static final String OI_COLOR_PICKER = "org.openintents.action.PICK_COLOR";
     public static final String OI_COLOR_DATA = "org.openintents.extra.COLOR";
 
-    private boolean gotPermission = false;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     private boolean getThatDamnPermission (){
         if (PackageManager.PERMISSION_GRANTED!=checkSelfPermission(Manifest.permission.CAMERA)){
             ActivityCompat.requestPermissions(this,
@@ -153,6 +159,7 @@ public class ColorPickerBaseActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         if (isFlashSupported()) {
             getMenuInflater().inflate(R.menu.menu_color_picker, menu);
             final MenuItem flashItem = menu.findItem(R.id.menu_color_picker_action_flash);
@@ -162,8 +169,11 @@ public class ColorPickerBaseActivity extends AppCompatActivity
         return true;
     }
 
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         final int itemId = item.getItemId();
         boolean handled;
         switch (itemId) {
@@ -204,9 +214,20 @@ public class ColorPickerBaseActivity extends AppCompatActivity
             }
             ColorItems.saveColorItem(this, new ColorItem(mLastPickedColor));
         } else if (v == mRelativeLayout) {
-            Intent myIntent = new Intent(ColorPickerBaseActivity.this, SearchView.class);
-            myIntent.putExtra("URL", mColorPreviewText.getText().subSequence(1, 7));
-            startActivity(myIntent);
+            if(mBottomSheetBehavior.getState() == mBottomSheetBehavior.STATE_EXPANDED) {
+                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                webVisa.setVisibility(View.GONE);
+                mColorPreviewText.setVisibility(View.VISIBLE);
+                mPickedColorPreview.setVisibility(View.VISIBLE);
+            }
+            else if(mBottomSheetBehavior.getState() == mBottomSheetBehavior.STATE_COLLAPSED) {
+                mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                webVisa.setVisibility(View.VISIBLE);
+                mColorPreviewText.setVisibility(View.GONE);
+                mPickedColorPreview.setVisibility(View.GONE);
+            } else {
+                
+            }
         }
     }
 
@@ -223,7 +244,9 @@ public class ColorPickerBaseActivity extends AppCompatActivity
         mPickedColorPreviewAnimated = findViewById(R.id.activity_color_picker_animated_preview);
         mColorPreviewText = (TextView) findViewById(R.id.activity_color_picker_color_preview_text);
         mPointerRing = findViewById(R.id.activity_color_picker_pointer_ring);
-        mRelativeLayout = (RelativeLayout ) findViewById(R.id.activity_color_picker_bottom_bar);
+        mRelativeLayout =  (RelativeLayout) findViewById(R.id.activity_color_picker_bottom_bar);
+
+
 
         mConfirmSaveMessage = (TextView) findViewById(R.id.activity_color_picker_confirm_save_message);
         mHideConfirmSaveMessage = new Runnable() {
@@ -242,6 +265,42 @@ public class ColorPickerBaseActivity extends AppCompatActivity
         applyPreviewColor(mLastPickedColor);
 
         mRelativeLayout.setOnClickListener(this);
+
+        mBottomSheetBehavior = BottomSheetBehavior.from (mRelativeLayout);
+        mBottomSheetBehavior.setPeekHeight(laRatio (12));
+        mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        mBottomSheetBehavior.setHideable(false);
+        webVisa = (WebView)findViewById(R.id.webVisa);
+
+        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                if(mBottomSheetBehavior.getState() == mBottomSheetBehavior.STATE_EXPANDED) {
+                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    webVisa.setVisibility(View.GONE);
+                    mColorPreviewText.setVisibility(View.VISIBLE);
+                    mPickedColorPreview.setVisibility(View.VISIBLE);
+                }
+                else if(mBottomSheetBehavior.getState() == mBottomSheetBehavior.STATE_COLLAPSED) {
+                    mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                    webVisa.setVisibility(View.VISIBLE);
+                    mColorPreviewText.setVisibility(View.GONE);
+                    mPickedColorPreview.setVisibility(View.GONE);
+                } else {
+
+                }
+            }
+        });
+    }
+
+    public int laRatio(int laRatio) {
+        DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+        return displayMetrics.heightPixels*laRatio/100;
     }
 
     /**
@@ -263,6 +322,9 @@ public class ColorPickerBaseActivity extends AppCompatActivity
             });
         }
     }
+
+
+
 
     /**
      * Initialize the deltas used for the translation of the preview of the picked color.

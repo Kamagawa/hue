@@ -21,6 +21,12 @@
 
     <!-- Color picker menu -->
     <string name="menu_color_picker_action_flash">Flash</string>
+    <string name="nav_about_us">about us</string>
+    <string name="license">license</string>
+    <string name="nav_settings">settings</string>
+    <string name="nav_saved">Starred</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_support">support</string>
 
 
 </resources>

@@ -31,4 +31,5 @@ dependencies {
     compile 'com.melnykov:floatingactionbutton:1.1.0'
     compile 'com.google.code.gson:gson:2.4'
     compile 'com.jpardogo.materialtabstrip:library:1.0.9'
+    compile 'com.android.support:design:25.1.0'
 }
